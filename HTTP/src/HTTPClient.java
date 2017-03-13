@@ -13,6 +13,7 @@ class HTTPClient{
 
     public static void main(String argv[]) throws Exception{
         BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
+        
         String sentence = inFromUser.readLine();
         analyse(sentence);
 
