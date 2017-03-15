@@ -23,15 +23,22 @@ public class TestClient {
         	//commands.add(sentence);
         	commandString+=(sentence+"\r\n");
         }
-        commandString.concat("\r\n");
-        //System.out.println(commandString);
+        commandString+=("\r\n");
+        System.out.println(commandString);
         outToServer.writeBytes(commandString);
         //outToServer.writeBytes("GET /index.html HTTP/1.0" +"\r\n\r\n");
-        String modifiedSentence = inFromServer.readLine();//we are reading only one line
-        System.out.println("FROM SERVER: " + modifiedSentence);
-//        String modifiedSentence2 = inFromServer.readLine();
-//        System.out.println("FROM SERVER 2: " + modifiedSentence2);
-
+        
+        String fromServer;
+        System.out.println("FROM SERVER: ");
+        // Read text from the server and write it to the screen.
+        try{
+        	while ( (fromServer = inFromServer.readLine()) != null) {
+        
+    		System.out.println(fromServer);
+        	}
+        } catch (IOException e){}
+            
+            // Close the socket.
         clientSocket.close();
     }
 }
