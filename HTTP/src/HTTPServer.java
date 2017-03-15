@@ -5,13 +5,14 @@ class HTTPServer{
     public static void main(String argv[]) throws Exception {
         ServerSocket welcomeSocket = new ServerSocket(6780);
         while(true) {
+        	// Create	 a 'real' socket from the Server socket.
             Socket connectionSocket = welcomeSocket.accept();
-            BufferedReader inFromClient =new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-            DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-            String clientSentence = inFromClient.readLine();
-            System.out.println("Received: " + clientSentence);
-            String capsSentence = clientSentence.toUpperCase() + '\n'; outToClient.writeBytes(capsSentence);
-
+            if(connectionSocket != null){
+            	Handler request = new Handler(connectionSocket);
+            	Thread thread = new Thread(request);
+            	thread.start();
+            	
+            }
         }
     }
 }
