@@ -3,6 +3,7 @@
  */
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 public class TestClient {
     public static void main(String argv[]) throws Exception{
         BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
@@ -13,19 +14,25 @@ public class TestClient {
         DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-        String sentence = inFromUser.readLine();
-        while(!(sentence = inFromUser.readLine()).equals("")) {
-            outToServer.writeBytes(sentence+ "\r\n");
+        String sentence;
+       // ArrayList <String> commands = new ArrayList<>();
+        String commandString = new String("");
+        //sentence = inFromUser.readLine();
+        while(!(sentence = inFromUser.readLine()).isEmpty()){
+        	
+        	//commands.add(sentence);
+        	commandString+=(sentence+"\r\n");
         }
-        outToServer.writeBytes("\r\n\r\n");
-
+        commandString.concat("\r\n");
+        //System.out.println(commandString);
+        outToServer.writeBytes(commandString);
         //outToServer.writeBytes("GET /index.html HTTP/1.0" +"\r\n\r\n");
         String modifiedSentence = inFromServer.readLine();//we are reading only one line
         System.out.println("FROM SERVER: " + modifiedSentence);
 //        String modifiedSentence2 = inFromServer.readLine();
 //        System.out.println("FROM SERVER 2: " + modifiedSentence2);
 
-        //clientSocket.close();
+        clientSocket.close();
     }
 }
 
