@@ -11,6 +11,7 @@ public class HTTPRequest {
     private String version;
     //private PrintWriter out;
 	private String path;
+	private String filePath;
 
 
     public HTTPRequest(String sentence) throws IOException, IllegalArgumentException, URISyntaxException {
@@ -56,6 +57,7 @@ public class HTTPRequest {
     		
             setURI(address);
 
+            setFilePath(getPath());
     		if (!getPath().startsWith("/")){
     			setPath("/" + getPath());
     		}
@@ -87,7 +89,19 @@ public class HTTPRequest {
 
 
 
-    private String getPath() {
+    public void setFilePath(String path2) {
+		this.filePath = path2;
+		
+	}
+    public String getFilePath(){
+    	return filePath;
+    }
+
+
+
+
+
+	public String getPath() {
 		return this.path;
 	}
 
@@ -104,24 +118,23 @@ public class HTTPRequest {
  * @return request: the request to send to the server
  * @throws IOException
  */
-	public String createRequest() throws IOException {
-    	String request = new String(this.getCommand()+" "+this.getPath()+" "+"HTTP\1.1\r\n");
+	public String createRequest(BufferedReader in) throws IOException {
+    	String request = new String(this.getCommand()+" "+this.getPath()+" "+"HTTP/1.1\r\n");
 
     	//HTTP/1.1 requires the client to add the host header field
     	String prt = Integer.toString(this.getPort());
-    	request += "Host: " + this.getHost() + ":" + prt + "\r\n\r\n";
+    	request += "Host: " + this.getHost() + "\r\n\r\n";
     	
 		//If the command is a put or a post command, the user needs to enter an extra string
     	//to specify the file
 		if(command.equals("PUT") || command.equals("POST")){
-			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 			System.out.println("Please paste/type the data to send and hit enter:");
-			String data = inFromUser.readLine();
-			inFromUser.close();
+			//BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+			String data = in.readLine();
 			request += data + "\n";
 
 		}
-		
+		in.close();
 		return request;
 
     	/*
