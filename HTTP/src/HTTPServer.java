@@ -3,7 +3,8 @@ import java.net.*;
 
 class HTTPServer{
     public static void main(String argv[]) throws Exception {
-        ServerSocket welcomeSocket = new ServerSocket(6000);
+    	System.out.println("bla");
+        ServerSocket welcomeSocket = new ServerSocket(1567);
         //Socket welcomeSocket = new Socket("localhost", 6780);
 //        while(true) {
 //            Socket connectionSocket = welcomeSocket.accept();
@@ -12,7 +13,7 @@ class HTTPServer{
 //            String clientSentence = inFromClient.readLine();
 //            System.out.println("Received: " + clientSentence);
 //            //String capsSentence = clientSentence.toUpperCase() + '\n'; outToClient.writeBytes(capsSentence);
-    	System.out.println("Listening to port 6780");
+    	System.out.println("Listening to port 6000");
     	while (true) { 
 			Socket connectionSocket = welcomeSocket.accept();
 			System.out.println("connectionSocket  " + connectionSocket);
