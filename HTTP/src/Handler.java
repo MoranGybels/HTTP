@@ -48,17 +48,30 @@ public class Handler implements Runnable{
 			String clientSentence = inFromClient.readLine();
 	        System.out.println("Received: " + clientSentence);
 	        analyse(clientSentence);
+	        
+	        String url = uri.getPath();
+		
+			
+			url = uri.getPath().replaceAll("%20", " ");
+			if (url.startsWith("./")) {
+				url = url.substring(1);
+			}
 	     // Constructing local path and log
 	        String domain = "localhost";
 	     			Path filePath = FileSystems.getDefault().getPath(domain, uri.getPath());
-	     			sep = File.separatorChar;
-	     			File f = new File("Serverfiles" + sep + domain + uri.getPath());
-	     			f.getParentFile().mkdirs();
-	     	System.out.println(filePath.toString());
+//	     			System.out.println("filepath "+filePath.toString());
+//	     			sep = File.separatorChar;
+//	     			File f = new File("Serverfiles" + sep + domain + url);
+//	     			
+//	     			f.getParentFile().mkdirs();
+	     	//System.out.println(filePath2.toString());
+	        File file = new File(System.getProperty("user.dir")+"/src/"+domain+url);
 			switch(command){
 			case "GET":
-				if(Files.exists(filePath)){
+				if(file.exists()){
+				//if(Files.exists(filePath)){
 					try {
+						System.out.println("it exists!");
 						statuscode(outToClient, 200);
 						byte[] data = doGet(filePath);
 						outToClient.write(data);
@@ -100,6 +113,8 @@ public class Handler implements Runnable{
 		
 		try {
 			uri =  new URI(input[1]);
+			System.out.println("uri ");
+			System.out.println(uri.getPath());
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -1,12 +1,25 @@
 package tests;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.junit.Test;
-
+import java.net.*;
+import java.nio.file.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.Scanner;
+import java.util.TimeZone;
 public class HTTPRequestTest {
 	
 	@Test
@@ -33,5 +46,36 @@ public class HTTPRequestTest {
 		System.out.println(goog.getPath());
 
 	}
+	
+	@Test
+	public void testfile(){
+		File file = new File("/Users/adminheremans/Downloads/beeldherkenning.tex");
+		System.out.println("Working Directory = " +
+	              System.getProperty("user.dir"));
+		try{ new Scanner(file);
+			System.out.println("Yes");
+		}
+		catch(FileNotFoundException hallo){
+			System.out.print("exc");
+			//Path filePath = FileSystems.getDefault().getPath("localhost", "index.html");
+
+		//System.out.println(Files.exists(filePath));
+	}
+		
+		File file2 = new File(System.getProperty("user.dir")+"/src/localhost/index.html");
+		System.out.println("Working Directory = " +
+	              System.getProperty("user.dir"));
+		try{ new Scanner(file2);
+			System.out.println("Yes");
+		}
+		catch(FileNotFoundException hallo){
+			System.out.print("exc");
+			//Path filePath = FileSystems.getDefault().getPath("localhost", "index.html");
+
+		//System.out.println(Files.exists(filePath));
+	}
+
+	}
+
 
 }
