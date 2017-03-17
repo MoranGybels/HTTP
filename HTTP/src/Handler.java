@@ -1,4 +1,21 @@
 import java.io.*;
+import java.io.*;
+import java.net.*;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Dictionary;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.regex.Pattern;
+
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +31,8 @@ public class Handler implements Runnable{
 	String command = null ;
 	URI uri = null ;
 	String version = null ;
+	char sep;
+
 	
 	public Handler(Socket socket){
 		this.clientSocket = socket; 
@@ -29,12 +48,19 @@ public class Handler implements Runnable{
 			String clientSentence = inFromClient.readLine();
 	        System.out.println("Received: " + clientSentence);
 	        analyse(clientSentence);
+	     // Constructing local path and log
+	        String domain = "localhost";
+	     			Path filePath = FileSystems.getDefault().getPath(domain, uri.getPath());
+	     			sep = File.separatorChar;
+	     			File f = new File("Serverfiles" + sep + domain + uri.getPath());
+	     			f.getParentFile().mkdirs();
+	     	System.out.println(filePath.toString());
 			switch(command){
 			case "GET":
-				if(Files.exists(Paths.get(uri.getPath()))){
+				if(Files.exists(filePath)){
 					try {
 						statuscode(outToClient, 200);
-						byte[] data = doGet(uri.getPath());
+						byte[] data = doGet(filePath);
 						outToClient.write(data);
 						break;
 					} catch (IOException e) {
@@ -94,8 +120,8 @@ public class Handler implements Runnable{
 		return response;
 	}
 	
-	public byte[] doGet(String path) throws IOException{
-		return Files.readAllBytes(Paths.get(path));
+	public byte[] doGet(Path path) throws IOException{
+		return Files.readAllBytes(path);
 	}
 	
 	public void statuscode(DataOutputStream out, int i) throws IOException{
