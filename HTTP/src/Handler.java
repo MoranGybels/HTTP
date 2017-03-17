@@ -21,7 +21,7 @@ public class Handler implements Runnable{
 
 	@Override
 	public void run(){
-		
+		System.out.println("HANDLER");
 		BufferedReader inFromClient;
 		try {
 			inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
