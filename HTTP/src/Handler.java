@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -18,19 +19,12 @@ public class Handler implements Runnable{
 
 	@Override
 	public void run() {
-		try{
+		
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
-		String[] clientSentence = null;
-		do{
-			clientSentence = inFromClient.readLine();
-            System.out.println("Received: " + clientSentence);
-            String capsSentence = clientSentence.toUpperCase() + '\n'; outToClient.writeBytes(capsSentence);
-		}while (clientSentence != null && clientSentence.equals("\n"));
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		String clientSentence = inFromClient.readLine();
+        System.out.println("Received: " + clientSentence);
+		
 		analyse(clientSentence);
 		switch(command){
 		case "GET":
@@ -41,7 +35,7 @@ public class Handler implements Runnable{
 				break;
 			}
 			else{
-				statuscode(404);
+				statuscode(outToclient, 404);
 				break;
 			}
 			
@@ -52,12 +46,12 @@ public class Handler implements Runnable{
 		
 	}
 	
-	public void analyse(String[] sentence){
-		String[] input = sentence.get(0).split(" ");
+	public void analyse(String sentence){
+		String[] input = sentence.split(" ");
 		command = input[0];
-		uri = input[1];
+		uri =  new URI(input[1]);
 		version = input[2];
-		if version.contains("HTTP/1.1")
+		if (version.contains("HTTP/1.1"))
 			if (headers.get("Host") == null){
 				String response = "HTTP/1.1 400 Bad Request\n";
 				out.writeBytes(response);
@@ -65,7 +59,7 @@ public class Handler implements Runnable{
 		
 	}
 	
-	public String getHeader(Path path){
+	public String getHeader(String path){
 		Calendar calendar = Calendar.getInstance();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -75,21 +69,21 @@ public class Handler implements Runnable{
 		return response;
 	}
 	
-	public byte[] doGet(Path path) throws IOExeption {
-		return Files.readAllBytes(path);
+	public byte[] doGet(String path) throws IOException{
+		return Files.readAllBytes();
 	}
 	
-	public void statuscode(int i){
-		switch(statuscode){
+	public void statuscode(DataOutputStream out, int i){
+		switch(i){
 		case 200:
-			String response = version + "200 OK \n";
-			response += getHeader(uri.getPath());
-			outToClient.writeBytes(response);
+			String response200 = version + "200 OK \n";
+			response200 += getHeader(uri.getPath());
+			out.writeBytes(response200);
 			break;
 		case 400:
-			String response = version + "400 Bad Request \n"
-			response += getHeader(uri.getPath()); 
-			response += "<html><body> \n"
+			String response400 = version + "400 Bad Request \n"
+			response400 += getHeader(uri.getPath()); 
+			response400 += "<html><body> \n"
 					+ "<h2>No Host: header received </h2> \n"
 					+ version + "requests must include the Host: header. \n"
 					+ "</body></html> \n";
