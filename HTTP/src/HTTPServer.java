@@ -3,7 +3,7 @@ import java.net.*;
 
 class HTTPServer{
     public static void main(String argv[]) throws Exception {
-        ServerSocket welcomeSocket = new ServerSocket(6780);
+        ServerSocket welcomeSocket = new ServerSocket(6000);
         //Socket welcomeSocket = new Socket("localhost", 6780);
 //        while(true) {
 //            Socket connectionSocket = welcomeSocket.accept();
