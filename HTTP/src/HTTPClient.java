@@ -55,6 +55,8 @@ class HTTPClient{
         HTTPRequest request = new HTTPRequest(sentence);
         String req= request.createRequest(inFromUser);
         
+        System.out.println("request :"+ req);
+        
         //Create a socket to the host, using the given port number, 
         //and create an outputstream and an inputstream
         Socket clientSocket = new Socket(request.getHost(),request.getPort());
@@ -65,6 +67,7 @@ class HTTPClient{
         System.out.println("request :"+ req);
         outToServer.writeBytes(req);
 		outToServer.flush();
+		//System.out.println("gelukt");
 		
 		// Read text from the server and write it to the screen. First line is always a status line
 		String serverRes = rdLine(inFromServer, false);
