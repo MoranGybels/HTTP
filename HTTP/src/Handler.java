@@ -63,7 +63,7 @@ public class Handler implements Runnable{
 	     	Path filePath = FileSystems.getDefault().getPath(domain, url);
 	     	System.out.println("filepath "+filePath.toString());
 	     	sep = File.separatorChar;
-	     	File f = new File( sep + domain + url);
+	     	File f = new File("Serverfiles" + sep +domain + url);
 	     	System.out.println("NIEUWE FILE: " + f.exists());
 	     			
 	     	f.getParentFile().mkdirs();
@@ -73,11 +73,11 @@ public class Handler implements Runnable{
 //	        Files.createDirectories(filePath.getParent());
 			switch(command){
 			case "GET":
-				//if(file.exists()){
-				if(Files.exists(filePath)){
+				if(f.exists()){
+				//if(Files.exists(filePath)){
 					try {
 						System.out.println("it exists!");
-						statuscode(outToClient, 200);
+						statuscode(f, outToClient, 200);
 						FileInputStream data = doGet(f);
 						outToClient.writeChars(data.toString());
 						break;
@@ -89,13 +89,12 @@ public class Handler implements Runnable{
 				}
 				else{
 					try {
-						statuscode( outToClient, 404);
+						statuscode(f, outToClient, 404);
 						break;
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					
 				}
 				
 			case "HEAD":
@@ -122,15 +121,15 @@ public class Handler implements Runnable{
 		System.out.println(version);
 	}
 	
-	public String getHeader() throws IOException{
+	public String getHeader(File file) throws IOException{
 		Calendar calendar = Calendar.getInstance();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		String response = "Date: " + dateFormat.format(calendar.getTime()) + "\n";
 		System.out.println("HEADER VOOR FILE ACCESS");
-		response += "Content-Type: " + Files.probeContentType(Paths.get(path));
+		response += "Content-Type: " + Files.probeContentType(file.toPath()) + "\n";
 		System.out.println("CONTENT-TYPE HEADER TOEGEVOEGD");
-		response += "Content-Length: " + Files.size(Paths.get(path)) + "\r\n";
+		response += "Content-Length: " + file.length() + "\r\n";
 		System.out.println("CONTENT-LENGTH HEADER TOEGEVOEGD");
 		return response;
 	}
@@ -140,29 +139,45 @@ public class Handler implements Runnable{
 		return fis;
 	}
 	
-	public void statuscode(DataOutputStream out, int i) throws IOException{
+	public void statuscode(File file, DataOutputStream out, int i) throws IOException{
 		System.out.println("FOut in statuscode functie? ");
 		switch(i){
 		case 200:
 			System.out.println("STATUSCODE");
-			String response200 = version + "200 OK \n";
+			String response200 = version + "	200 OK \n";
 			System.out.println("NOG STEEDS NIETS MET FILE GEDAAN");
-			response200 += getHeader();
+			response200 += getHeader(file);
 			System.out.println("HEADER TOEGEVOEGD");
 			out.writeBytes(response200);
 			break;
 		case 400:
-			String response400 = version + "400 Bad Request \n";
-			response400 += getHeader(); 
+			String response400 = version + "	400 Bad Request \n";
+			response400 += getHeader(file); 
 			response400 += "<html><body> \n"
 					+ "<h2>No Host: header received </h2> \n"
 					+ version + "requests must include the Host: header. \n"
 					+ "</body></html> \n";
 			out.writeBytes(response400);
-			
+			break;
 		case 404:
+			String response404 = version + "	404 Not Found \n";
+			System.out.println("AANPASSINGEN GEDAAN?");
+			Calendar calendar = Calendar.getInstance();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.US);
+			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+			response404 += "Date: " + dateFormat.format(calendar.getTime()) + "\n";
+			out.writeBytes(response404);
+			break;
 		case 500:
+			String response500 = version + "	500 Server Error \n";
+			response500 += getHeader(file);
+			out.writeBytes(response500);
+			break;
 		case 304:
+			String response304 = version + "	304 Not Modified \n";
+			response304 += getHeader(file);
+			out.writeBytes(response304);
+			break;
 		default: 
 			System.out.println("Invalid status code " + i);
 			break;
