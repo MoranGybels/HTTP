@@ -41,7 +41,6 @@ public class Handler implements Runnable{
 
 	@Override
 	public void run(){
-		System.out.println("HANDLER");
 		BufferedReader inFromClient;
 		try {
 			inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -49,11 +48,7 @@ public class Handler implements Runnable{
 			String clientSentence = inFromClient.readLine();
 	        System.out.println("Received: " + clientSentence);
 	        analyse(clientSentence);
-	        System.out.println("SENTENCE GEANALYSEERD" );
-	        
 	        String url = uri;
-		
-			
 			url = uri.replaceAll("%20", " ");
 			if (url.startsWith("./")) {
 				url = url.substring(1);
@@ -78,8 +73,8 @@ public class Handler implements Runnable{
 					try {
 						System.out.println("it exists!");
 						statuscode(f, outToClient, 200);
-						FileInputStream data = doGet(f);
-						outToClient.writeChars(data.toString());
+						byte[] data = doGet(Paths.get(f.getPath()));
+						outToClient.write(data);;
 						break;
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -98,6 +93,13 @@ public class Handler implements Runnable{
 				}
 				
 			case "HEAD":
+				if(f.exists()){
+					statuscode(f, outToClient, 200);
+					break;
+				} else{
+					statuscode(f, outToClient, 404);
+					break;
+				}
 			case "PUT":
 			case "POST":
 			}
@@ -126,17 +128,13 @@ public class Handler implements Runnable{
 		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		String response = "Date: " + dateFormat.format(calendar.getTime()) + "\n";
-		System.out.println("HEADER VOOR FILE ACCESS");
 		response += "Content-Type: " + Files.probeContentType(file.toPath()) + "\n";
-		System.out.println("CONTENT-TYPE HEADER TOEGEVOEGD");
 		response += "Content-Length: " + file.length() + "\r\n";
-		System.out.println("CONTENT-LENGTH HEADER TOEGEVOEGD");
 		return response;
 	}
 	
-	public FileInputStream doGet(File file) throws IOException{
-		FileInputStream fis = new FileInputStream(file);
-		return fis;
+	public byte[] doGet(Path path) throws IOException{
+		return Files.readAllBytes(path);
 	}
 	
 	public void statuscode(File file, DataOutputStream out, int i) throws IOException{
