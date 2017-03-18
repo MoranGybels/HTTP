@@ -59,7 +59,6 @@ public class Handler implements Runnable{
 	     	System.out.println("filepath "+filePath.toString());
 	     	sep = File.separatorChar;
 	     	File f = new File("Serverfiles" + sep +domain + url);
-	     	System.out.println("NIEUWE FILE: " + f.exists());
 	     			
 	     	f.getParentFile().mkdirs();
 	     	//System.out.println(filePath2.toString());
@@ -71,10 +70,9 @@ public class Handler implements Runnable{
 				if(f.exists()){
 				//if(Files.exists(filePath)){
 					try {
-						System.out.println("it exists!");
 						statuscode(f, outToClient, 200);
 						byte[] data = doGet(Paths.get(f.getPath()));
-						outToClient.write(data);;
+						outToClient.write(data);
 						break;
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -141,11 +139,8 @@ public class Handler implements Runnable{
 		System.out.println("FOut in statuscode functie? ");
 		switch(i){
 		case 200:
-			System.out.println("STATUSCODE");
 			String response200 = version + "	200 OK \n";
-			System.out.println("NOG STEEDS NIETS MET FILE GEDAAN");
 			response200 += getHeader(file);
-			System.out.println("HEADER TOEGEVOEGD");
 			out.writeBytes(response200);
 			break;
 		case 400:
@@ -159,7 +154,6 @@ public class Handler implements Runnable{
 			break;
 		case 404:
 			String response404 = version + "	404 Not Found \n";
-			System.out.println("AANPASSINGEN GEDAAN?");
 			Calendar calendar = Calendar.getInstance();
 			SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.US);
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
