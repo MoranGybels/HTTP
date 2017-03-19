@@ -71,6 +71,7 @@ public class Handler implements Runnable{
 				//if(Files.exists(filePath)){
 					try {
 						statuscode(f, outToClient, 200);
+						System.out.println("allo");
 						byte[] data = doGet(Paths.get(f.getPath()));
 						outToClient.write(data);
 						break;
@@ -132,6 +133,7 @@ public class Handler implements Runnable{
 	}
 	
 	public byte[] doGet(Path path) throws IOException{
+		System.out.println("hallo");
 		return Files.readAllBytes(path);
 	}
 	
