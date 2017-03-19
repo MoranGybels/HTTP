@@ -31,7 +31,7 @@ public class HTTPRequestTest {
 	@Test
 	public void testHTTPRequestRight() throws IllegalArgumentException, IOException, URISyntaxException {
 		HTTPRequest right = new HTTPRequest("HTTPClient GET http://www.google.com/index.html 80");
-		System.out.println(right.createRequest(new BufferedReader(new Reader())));
+		//System.out.println(right.createRequest(new BufferedReader(new Reader())));
 		
 	}
 	
