@@ -109,6 +109,13 @@ public class Handler implements Runnable{
 				}
 				
 			case "POST":
+				if(doPost(f, data)){
+					statuscode(f, outToClient, 200);
+					break;
+				} else{
+					statuscode(f, outToClient, 500);
+					break; 
+				}
 			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -152,6 +159,24 @@ public class Handler implements Runnable{
 			f.createNewFile();
 			PrintWriter out = new PrintWriter(f);
 			for (String str:body) {
+				out.println(str);
+				out.flush();
+			}
+			out.close();
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+	
+	
+	public boolean doPost(File f, LinkedList<String> data) {
+		try {
+			if (!f.exists()){
+				f.createNewFile();
+			}
+			PrintWriter out = new PrintWriter(new FileWriter(f, true));
+			for (String str:data) {
 				out.println(str);
 				out.flush();
 			}
