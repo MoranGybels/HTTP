@@ -61,6 +61,7 @@ public class Handler implements Runnable{
 	     	File f = new File("Serverfiles" + sep +domain + url);
 	     			
 	     	f.getParentFile().mkdirs();
+	     	LinkedList<String> data = getData(inFromClient);
 	     	//System.out.println(filePath2.toString());
 //	        File file = new File(System.getProperty("user.dir")+"/src/"+domain+url);
 //	        path = file.getAbsolutePath();
@@ -71,8 +72,8 @@ public class Handler implements Runnable{
 				//if(Files.exists(filePath)){
 					try {
 						statuscode(f, outToClient, 200);
-						byte[] data = doGet(Paths.get(f.getPath()));
-						outToClient.write(data);
+						byte[] body = doGet(Paths.get(f.getPath()));
+						outToClient.write(body);
 						break;
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -99,6 +100,14 @@ public class Handler implements Runnable{
 					break;
 				}
 			case "PUT":
+				if(doPut(f, data)){
+					statuscode(f, outToClient, 200);
+					break;
+				} else{
+					statuscode(f, outToClient, 500);
+					break; 
+				}
+				
 			case "POST":
 			}
 		} catch (IOException e1) {
@@ -133,6 +142,38 @@ public class Handler implements Runnable{
 	
 	public byte[] doGet(Path path) throws IOException{
 		return Files.readAllBytes(path);
+	}
+	
+	private boolean doPut(File f, LinkedList<String> body) {
+		if (f.exists()){
+			f.delete();
+		}
+		try {
+			f.createNewFile();
+			PrintWriter out = new PrintWriter(f);
+			for (String str:body) {
+				out.println(str);
+				out.flush();
+			}
+			out.close();
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+	
+	public LinkedList<String> getData(BufferedReader inFromClient) throws IOException {
+		LinkedList<String> data = new LinkedList<String>();
+
+		while (inFromClient.ready()) {
+			String nextLine = inFromClient.readLine();
+			if (nextLine.equals("") || nextLine.equals("\n")
+					|| nextLine.equals("\r\n") || nextLine.equals("\r")) {
+				return data;
+			}
+			data.add(nextLine);
+		}
+		return data;
 	}
 	
 	public void statuscode(File file, DataOutputStream out, int i) throws IOException{
