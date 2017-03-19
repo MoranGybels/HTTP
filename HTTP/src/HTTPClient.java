@@ -91,7 +91,9 @@ class HTTPClient{
 				setContentLength(Integer.parseInt(contentLengthStr));
 			}
 		}
-				
+		//TODO: onze localhost server moet een enter geven op het einde vna put of post zodat het niet vastloopt
+		System.out.println("1 niet vastgelopen");
+		
 		//Now we start reading what the server sent us, print it out for the user and put it in a file,
 		//until we have all the content
 		//While doing so, we grab the URI's of all images we have to retrieve

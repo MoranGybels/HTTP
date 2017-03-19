@@ -26,7 +26,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class Handler implements Runnable{
-	
+	private boolean lastRequest=true;
 	Socket clientSocket;
 	String command = null ;
 	String uri = null ;
@@ -45,23 +45,47 @@ public class Handler implements Runnable{
 		try {
 			inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
+			do{
 			String clientSentence = inFromClient.readLine();
 	        System.out.println("Received: " + clientSentence);
 	        analyse(clientSentence);
+	        
+	        System.out.println("GET HEADERS");
+			LinkedHashMap<String, String> clientHeaders = getHeaders(inFromClient);
+			System.out.println("GET BODY");
+			LinkedList<String> clientBody = getData(inFromClient);
+			System.out.println("BODY INCOMING");
+			for (String a: clientBody) {
+				System.out.println(a);
+			}
+
+			String response = "";
+			String domain = "localhost";
+
+			lastRequest = shouldClose(clientHeaders);
+				if (clientHeaders.get("Host") == null) {
+					//TODO: return 400
+					break;
+				} /*else {
+					// Accepting absolute URLs (small workaround)
+					if (uri.startsWith("http://")) {
+						uri = uri.split(domain)[1];
+					}
+				}*/
+			
+			
 	        String url = uri;
 			url = uri.replaceAll("%20", " ");
 			if (url.startsWith("./")) {
 				url = url.substring(1);
 			}
 	     // Constructing local path and log
-	        String domain = "localhost";
 	     	Path filePath = FileSystems.getDefault().getPath(domain, url);
 	     	System.out.println("filepath "+filePath.toString());
 	     	sep = File.separatorChar;
 	     	File f = new File(domain + url);
 	     			
 	     	f.getParentFile().mkdirs();
-	     	LinkedList<String> data = getData(inFromClient);
 	     	//System.out.println(filePath2.toString());
 //	        File file = new File(System.getProperty("user.dir")+"/src/"+domain+url);
 //	        path = file.getAbsolutePath();
@@ -69,7 +93,6 @@ public class Handler implements Runnable{
 			switch(command){
 			case "GET":
 				if(f.exists()){
-				//if(Files.exists(filePath)){
 					try {
 						statuscode(f, outToClient, 200);
 
@@ -101,7 +124,7 @@ public class Handler implements Runnable{
 					break;
 				}
 			case "PUT":
-				if(doPut(f, data)){
+				if(doPut(f, clientBody)){
 					statuscode(f, outToClient, 200);
 					break;
 				} else{
@@ -110,7 +133,7 @@ public class Handler implements Runnable{
 				}
 				
 			case "POST":
-				if(doPost(f, data)){
+				if(doPost(f, clientBody)){
 					statuscode(f, outToClient, 200);
 					break;
 				} else{
@@ -118,6 +141,7 @@ public class Handler implements Runnable{
 					break; 
 				}
 			}
+			}while(!lastRequest);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -189,6 +213,14 @@ public class Handler implements Runnable{
 		return true;
 	}
 	
+	/**
+	 * Get the data of the client request
+	 * @param inFromClient
+	 * 			The input reader from the client
+	 * @return
+	 * 			The data
+	 * @throws IOException
+	 */
 	public LinkedList<String> getData(BufferedReader inFromClient) throws IOException {
 		LinkedList<String> data = new LinkedList<String>();
 
@@ -204,7 +236,7 @@ public class Handler implements Runnable{
 	}
 	
 	public void statuscode(File file, DataOutputStream out, int i) throws IOException{
-		System.out.println("FOut in statuscode functie? ");
+		//System.out.println("FOut in statuscode functie? ");
 		switch(i){
 		case 200:
 			String response200 = version + "	200 OK \n";
@@ -242,6 +274,62 @@ public class Handler implements Runnable{
 			System.out.println("Invalid status code " + i);
 			break;
 		}
+	}
+	/**
+	 * Returns if the connection should close, depending on the headers only. Version isn't checked.
+	 * @param headers
+	 * 			The headers
+	 * @return
+	 * 			true if we have a "Connection: close" header
+	 */
+	private boolean shouldClose(LinkedHashMap<String, String> headers) {
+		// So as to avoid confusion between Close, CLOSE and close.
+		if (headers.get("Connection")!=null && ( headers.get("Connection").contains("lose")
+				|| headers.get("Connection").contains("LOSE"))) {
+			return true;
+		}
+		return false;
+	}
+	
+
+
+	/**
+	 * 
+	 * @param inFromClient
+	 * 			The input reader from the client.
+	 * @return
+	 * 			A map with the headers
+	 * @throws IOException
+	 */
+	private LinkedHashMap<String, String> getHeaders(BufferedReader inFromClient)
+			throws IOException {
+		LinkedHashMap<String, String> map = new LinkedHashMap<>();
+		String clientSentence = null;
+		String previouskey = null;
+		clientSentence = inFromClient.readLine();
+		while (clientSentence != null && !clientSentence.equals("\n") && !clientSentence.equals("\r\n")&& !clientSentence.equals("")){
+			// Here, there isn't a new header but the old one is appended
+			if (clientSentence.startsWith(" ")
+					|| clientSentence.startsWith("\t")) {
+				// Remove tabs and eventual spaces first
+				String newvalue = map.get(previouskey)
+						+ clientSentence.replaceAll("^\\t+", "").replaceAll("^\\s+", "");
+				map.put(previouskey, newvalue);
+
+			}
+			// We get a new header
+			else {
+				String[] clientSentenceArray = clientSentence.split(":", 2);
+				String key = clientSentenceArray[0];
+				// Found on StackOverflow
+				String value = clientSentenceArray[1];
+				value = value.replaceAll("^\\s+", "");
+				map.put(key, value);
+				previouskey = key;
+			}
+			clientSentence = inFromClient.readLine();
+		};
+		return map;
 	}
 
 
