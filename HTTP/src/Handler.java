@@ -58,7 +58,7 @@ public class Handler implements Runnable{
 	     	Path filePath = FileSystems.getDefault().getPath(domain, url);
 	     	System.out.println("filepath "+filePath.toString());
 	     	sep = File.separatorChar;
-	     	File f = new File("Serverfiles" + sep +domain + url);
+	     	File f = new File(domain + url);
 	     			
 	     	f.getParentFile().mkdirs();
 	     	LinkedList<String> data = getData(inFromClient);
