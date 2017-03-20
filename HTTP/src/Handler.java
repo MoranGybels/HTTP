@@ -46,8 +46,23 @@ public class Handler implements Runnable{
 			inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
 			do{
-			String clientSentence = inFromClient.readLine();
-	        System.out.println("Received: " + clientSentence);
+				String clientSentence = null;
+				do {
+					try {
+						clientSentence = inFromClient.readLine();
+						System.out.println("clientsentence "+clientSentence);
+					}
+					catch (SocketException e) {
+						System.out.println("WHOOPS: " + clientSentence);
+					}
+				} while (clientSentence != null && clientSentence.equals("\n"));
+
+				if (clientSentence == null) {
+					System.out.println("clientsentence null");
+					break;
+				}
+			
+				//System.out.println("Received: " + clientSentence);
 	        analyse(clientSentence);
 	        
 	        System.out.println("GET HEADERS");
@@ -64,7 +79,7 @@ public class Handler implements Runnable{
 
 			lastRequest = shouldClose(clientHeaders);
 				if (clientHeaders.get("Host") == null) {
-					//TODO: return 400
+					statuscode(null, outToClient, 400);
 					break;
 				} /*else {
 					// Accepting absolute URLs (small workaround)
@@ -148,7 +163,7 @@ public class Handler implements Runnable{
 		}
 		
 		
-		
+		System.out.println("finished");
 		
 	}
 	
@@ -169,11 +184,11 @@ public class Handler implements Runnable{
 		String response = "Date: " + dateFormat.format(calendar.getTime()) + "\n";
 		response += "Content-Type: " + Files.probeContentType(file.toPath()) + "\n";
 		response += "Content-Length: " + file.length() + "\r\n";
+		response += "\r\n";
 		return response;
 	}
 	
 	public byte[] doGet(Path path) throws IOException{
-		System.out.println("hallo");
 		return Files.readAllBytes(path);
 	}
 	

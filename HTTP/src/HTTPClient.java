@@ -107,16 +107,19 @@ class HTTPClient{
 		}
 		File file = new File("RequestedFiles" + sep + request.getHost() + sep + request.getFilePath());
 		file.getParentFile().mkdirs();
-		
+		System.out.println("2 niet vastgelopen");
+
 		//Create the file. If it existed, delete it.
 		if (file.exists()){
 			file.delete();
 		}
 		file.createNewFile();
 		PrintWriter out = new PrintWriter(file);	//The printwriter writes lines to the specified file	
-		
+		System.out.println("3 niet vastgelopen");
+
 		//Print the response of the server out for the user and also store it in the file
 		if(!request.getCommand().equals("HEAD")){
+			System.out.println("contentlength" +contentLength);
 			while (contentLength>0){
 				serverRes = rdLine(inFromServer, true);
 				System.out.println(serverRes);
@@ -126,6 +129,8 @@ class HTTPClient{
 				//setContentLength(getContentLength() - (serverRes.length() + 1));
 				//TODO verwijder deze print
 				//System.out.println("contlength:" + getContentLength());
+				System.out.println("4 niet vastgelopen");
+
 			}
 		}
 		
