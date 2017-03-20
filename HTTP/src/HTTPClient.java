@@ -55,7 +55,6 @@ class HTTPClient{
         HTTPRequest request = new HTTPRequest(sentence);
         String req= request.createRequest(inFromUser);
         
-        System.out.println("request :"+ req);
         
         //Create a socket to the host, using the given port number, 
         //and create an outputstream and an inputstream
@@ -92,7 +91,6 @@ class HTTPClient{
 			}
 		}
 		//TODO: onze localhost server moet een enter geven op het einde vna put of post zodat het niet vastloopt
-		System.out.println("1 niet vastgelopen");
 		
 		//Now we start reading what the server sent us, print it out for the user and put it in a file,
 		//until we have all the content
@@ -107,7 +105,6 @@ class HTTPClient{
 		}
 		File file = new File("RequestedFiles" + sep + request.getHost() + sep + request.getFilePath());
 		file.getParentFile().mkdirs();
-		System.out.println("2 niet vastgelopen");
 
 		//Create the file. If it existed, delete it.
 		if (file.exists()){
@@ -115,11 +112,9 @@ class HTTPClient{
 		}
 		file.createNewFile();
 		PrintWriter out = new PrintWriter(file);	//The printwriter writes lines to the specified file	
-		System.out.println("3 niet vastgelopen");
 
 		//Print the response of the server out for the user and also store it in the file
 		if(!request.getCommand().equals("HEAD")){
-			System.out.println("contentlength" +contentLength);
 			while (contentLength>0){
 				serverRes = rdLine(inFromServer, true);
 				System.out.println(serverRes);
@@ -129,7 +124,6 @@ class HTTPClient{
 				//setContentLength(getContentLength() - (serverRes.length() + 1));
 				//TODO verwijder deze print
 				//System.out.println("contlength:" + getContentLength());
-				System.out.println("4 niet vastgelopen");
 
 			}
 		}

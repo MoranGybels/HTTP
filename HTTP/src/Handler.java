@@ -141,6 +141,8 @@ public class Handler implements Runnable{
 			case "PUT":
 				if(doPut(f, clientBody)){
 					statuscode(f, outToClient, 200);
+					byte[] body = doGet(Paths.get(f.getPath()));
+					outToClient.write(body);
 					break;
 				} else{
 					statuscode(f, outToClient, 500);
@@ -150,6 +152,8 @@ public class Handler implements Runnable{
 			case "POST":
 				if(doPost(f, clientBody)){
 					statuscode(f, outToClient, 200);
+					byte[] body = doGet(Paths.get(f.getPath()));
+					outToClient.write(body);
 					break;
 				} else{
 					statuscode(f, outToClient, 500);
@@ -337,10 +341,16 @@ public class Handler implements Runnable{
 				String[] clientSentenceArray = clientSentence.split(":", 2);
 				String key = clientSentenceArray[0];
 				// Found on StackOverflow
+				try{
 				String value = clientSentenceArray[1];
 				value = value.replaceAll("^\\s+", "");
 				map.put(key, value);
 				previouskey = key;
+				}catch(ArrayIndexOutOfBoundsException e){
+					System.out.println("Header wrong");
+					return null;
+				}
+				
 			}
 			clientSentence = inFromClient.readLine();
 		};
