@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Dictionary;
@@ -24,7 +26,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
-
 public class Handler implements Runnable{
 	private boolean lastRequest=true;
 	Socket clientSocket;
@@ -108,16 +109,36 @@ public class Handler implements Runnable{
 			switch(command){
 			case "GET":
 				if(f.exists()){
-					try {
-						statuscode(f, outToClient, 200);
+					if( clientHeaders.get("If-modified-since") == null){
+						try {
+							statuscode(f, outToClient, 200);
 
-						byte[] body = doGet(Paths.get(f.getPath()));
-						outToClient.write(body);
-						break;
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+							byte[] body = doGet(Paths.get(f.getPath()));
+							outToClient.write(body);
+							break;
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else{
+						
+						//Date date = new Date(clientHeaders.get("if-modified-since")); // 'epoch' in long
+
+						//SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.GERMANY);
+						//String dateString = formatter.format(date);
+//
+						//formatter = new SimpleDateFormat("hh:mm a"); //The "a" is the AM/PM marker
+				//String time = formatter.format(date);
+						
+						 DateTimeFormatter dtf  = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy:mm:ss z", Locale.GERMANY);
+					     ZonedDateTime     zdt  = ZonedDateTime.parse(clientHeaders.get("if-modified-since"),dtf);        
+					     System.out.println(zdt.toInstant().toEpochMilli()); 
+					     long epoch = zdt.toInstant().toEpochMilli();
+					     if(epoch<f.lastModified()){
+					    	 
+					     }
 					}
+					
 					
 				}
 				else{
@@ -183,7 +204,7 @@ public class Handler implements Runnable{
 	
 	public String getHeader(File file) throws IOException{
 		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.US);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.GERMANY);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		String response = "Date: " + dateFormat.format(calendar.getTime()) + "\n";
 		response += "Content-Type: " + Files.probeContentType(file.toPath()) + "\n";
