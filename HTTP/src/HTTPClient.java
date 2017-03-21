@@ -90,7 +90,7 @@ class HTTPClient{
 				setContentLength(Integer.parseInt(contentLengthStr));
 			}
 		}
-		//TODO: onze localhost server moet een enter geven op het einde vna put of post zodat het niet vastloopt
+		
 		
 		//Now we start reading what the server sent us, print it out for the user and put it in a file,
 		//until we have all the content
@@ -113,11 +113,14 @@ class HTTPClient{
 		file.createNewFile();
 		PrintWriter out = new PrintWriter(file);	//The printwriter writes lines to the specified file	
 
+
 		//Print the response of the server out for the user and also store it in the file
 		if(!request.getCommand().equals("HEAD")){
 			while (contentLength>0){
 				serverRes = rdLine(inFromServer, true);
-				System.out.println(serverRes);
+				if (request.getCommand().equals("GET")){
+					System.out.println(serverRes);
+				}
 				out.println(serverRes);
 				out.flush();
 				//Subtract one extra because rdLine drops \n too
@@ -132,6 +135,7 @@ class HTTPClient{
 		out.flush();
 		out.close();
 		
+		if (request.getCommand().equals("GET")){
 		//Now we grab all relative URLs of images from the file, using the Jsoup library as an html parser
 		LinkedList<String> images = new LinkedList<String>();
 		Document doc = Jsoup.parse(file, "UTF-8");
@@ -220,7 +224,7 @@ class HTTPClient{
 				}
 			}
 		}
-		
+		}
 		//m.writeMap();
 		// Close the socket and its connected streams.
 		inFromServer.close();

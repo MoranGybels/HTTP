@@ -99,8 +99,6 @@ public class HTTPRequest {
 
 
 
-
-
 	public String getPath() {
 		return this.path;
 	}
