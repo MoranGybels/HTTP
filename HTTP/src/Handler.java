@@ -109,7 +109,9 @@ public class Handler implements Runnable{
 			switch(command){
 			case "GET":
 				if(f.exists()){
-					if( clientHeaders.get("If-modified-since") == null){
+					System.out.println("FILE EXIST");
+					if( clientHeaders.get("If-Modified-Since") == null){
+						System.out.println("IF-MODIFIED-SINCE IS NULL");
 						try {
 							statuscode(f, outToClient, 200);
 
@@ -123,23 +125,33 @@ public class Handler implements Runnable{
 					} else{
 						
 						//Date date = new Date(clientHeaders.get("if-modified-since")); // 'epoch' in long
-
 						//SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.GERMANY);
 						//String dateString = formatter.format(date);
-//
 						//formatter = new SimpleDateFormat("hh:mm a"); //The "a" is the AM/PM marker
-				//String time = formatter.format(date);
+						//String time = formatter.format(date);
 						
-						 DateTimeFormatter dtf  = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy:mm:ss z", Locale.GERMANY);
-					     ZonedDateTime     zdt  = ZonedDateTime.parse(clientHeaders.get("if-modified-since"),dtf);        
+						 DateTimeFormatter dtf  = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy:mm:ss z", Locale.ITALY);
+					     ZonedDateTime     zdt  = ZonedDateTime.parse(clientHeaders.get("If-Modified-Since"));        
 					     System.out.println(zdt.toInstant().toEpochMilli()); 
 					     long epoch = zdt.toInstant().toEpochMilli();
+					     System.out.println("EPOCH: " + epoch);
+					     System.out.println("LAST MODIFIED: " + f.lastModified());
 					     if(epoch<f.lastModified()){
-					    	 
+					    	 try {
+									statuscode(f, outToClient, 200);
+									byte[] body = doGet(Paths.get(f.getPath()));
+									outToClient.write(body);
+									break;
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+					     } else{
+					    	 statuscode(f, outToClient, 304);
 					     }
+					
+					
 					}
-					
-					
 				}
 				else{
 					try {
