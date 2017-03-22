@@ -144,7 +144,7 @@ class HTTPClient{
 			String src = el.attr("src");
 			System.out.println(src);
 			//We try to avoid absolute URLs, because we weren't supposed to be able to process these
-			if(!src.startsWith("http:/") && !src.startsWith("www.")){
+			if(!src.startsWith("https:/")&&!src.startsWith("http:/") && !src.startsWith("www.")&&!src.startsWith("file.")){
 				if(!src.startsWith("/")){
 					src = "/" + src;
 				}
@@ -218,10 +218,10 @@ class HTTPClient{
 						setContentLength(length);
 					}
 				}
-				while (contentLength>0){
+				/*while (contentLength>0){
 					serverRes = rdLine(inFromServer, true);
 					System.out.println(serverRes);
-				}
+				}*/
 			}
 		}
 		}
@@ -306,6 +306,7 @@ class HTTPClient{
 	 */
 	private static void imageDownload(InputStream in, String url, String host) throws IOException {
 		char sep = File.separatorChar;
+		url = url.replaceAll("%20", " ");
 		url = "RequestedFiles" + sep + host +  sep + url;
 		File f = new File(url);
 		//Create the parent path, if one exists
