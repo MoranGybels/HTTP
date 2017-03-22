@@ -2,24 +2,43 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 
+/**
+ * A class of HTTPRequests. To construct an HTTPRequest, the user provides a sentence 
+ * like 'HTTPClient command URL port'. 
+ * An HTTPRequest object consists of several parameters: the host, the port, the uri, the command, the http version
+ * and the path.
+ * 
+ * @author Elisabeth, Moran
+ *
+ */
 public class HTTPRequest {
     private String host;
     private int port;
-    private boolean error;
     private URI uri;
     private String command;
     private String version;
-    //private PrintWriter out;
 	private String path;
 	private String filePath;
 
-
+	/**
+	 * Constructor of an HTTPRequest. Given a client sentence, it extracts the important parameters of the request.
+	 * An HTTPRequest object consists of several parameters: the host, the port, the uri (the full uri), the command, the http version
+	 * and the path (the part of the uri after the host).
+	 * 
+	 * @param sentence
+	 * @throws IOException
+	 * @throws IllegalArgumentException
+	 * @throws URISyntaxException
+	 */
     public HTTPRequest(String sentence) throws IOException, IllegalArgumentException, URISyntaxException {
+    	
+    	//Split sentence in words
         String[] input = sentence.split(" ");
         if (!input[0].equals(new String("HTTPClient"))){
         	throw new IllegalArgumentException("Wrong command: your command should start with HTTPClient");
         }
-        else { //index 1 tot 10
+        
+        else { 
         	
             // check length of the request
             if (input.length != 4) {
@@ -45,7 +64,7 @@ public class HTTPRequest {
             	throw new IllegalArgumentException("Wrong command: expecting HEAD GET PUT POST");
             }
 
-            //Getting the path and host
+            //Getting the path and host (without http:// the uri class doesn't work properly)
     		//Assumption: the given uri is of the form (http://)host/path
     		String addressStr = input[2];
     		if(!addressStr.startsWith("http://")){
@@ -53,8 +72,9 @@ public class HTTPRequest {
     		}
     		    	
     		URI address = new URI(addressStr);
+    		//The path of the uri
     		setPath(address.getPath());
-    		
+    		//The full uri
             setURI(address);
 
             setFilePath(getPath());
@@ -62,23 +82,12 @@ public class HTTPRequest {
     			setPath("/" + getPath());
     		}
     		setHost(address.getHost());
-
-
-//            if (getURI().startsWith("http://")){
-//                setURI(getURI().substring(7));
-//            }
-//
-//            //set host
-//            int index = getURI().indexOf('/');
-//            setHost(getURI());
-//            if (index!=-1) {
-//                setHost(getURI().substring(0, index));
-//            }
-
             
     		//Set port
-            setPort(Integer.parseInt(input[3]));
-            //TODO: als er geen poort gespecifieerd is moet dit 80 worden?
+    		if (!address.getHost().contains("localhost") && Integer.parseInt(input[3])!=80){
+    			throw new IllegalArgumentException("The port number for remote servers should be 80");
+    		}
+    		setPort(Integer.parseInt(input[3]));
             
             
 
@@ -88,34 +97,49 @@ public class HTTPRequest {
 
 
 
-
+    /**
+     * Set the file path of this request to path2.
+     * @param path2
+     */
     public void setFilePath(String path2) {
 		this.filePath = path2;
 		
 	}
+    
+    /**
+     * 
+     * @return filePath
+     */
     public String getFilePath(){
     	return filePath;
     }
 
 
-
+	/**
+	 * Get the path of the uri of this request
+	 * @return
+	 */
 	public String getPath() {
 		return this.path;
 	}
 
 
-
+/**
+ * 
+ * @param path
+ */
 	private void setPath(String path) {
 		this.path = path;
 	}
 
 
 
-/**
- * Create a request in the form of a string to send to the server.
- * @return request: the request to send to the server
- * @throws IOException
- */
+	/**
+	 * Create a request in the form of a string to send to the server.
+	 * 
+	 * @return request: the request to send to the server
+	 * @throws IOException
+	 */
 	public String createRequest(BufferedReader in) throws IOException {
     	String request = new String(this.getCommand()+" "+this.getPath()+" "+"HTTP/1.1\r\n");
 
@@ -126,65 +150,90 @@ public class HTTPRequest {
 		//If the command is a put or a post command, the user needs to enter an extra string
     	//to specify the file
 		if(command.equals("PUT") || command.equals("POST")){
-			System.out.println("Please paste/type the data to send and hit enter:");
-			//BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+			System.out.println("Please paste/type the data to send and hit enter: ");
 			String data = in.readLine();
 			request += data + "\n";
 
 		}
+		//Close the input stream
 		in.close();
 		return request;
-
-    	/*
-    	receiveFile(clientSocket,100,getURI());//TODO:nu komen hier de eerste 100 karakters en daarna worden ze geprint :)
-        String fromServer;
-        System.out.println("FROM SERVER: ");
-        // Read text from the server and write it to the screen.
-        try{
-            while ( (fromServer = inFromServer.readLine()) != null) {
-
-                System.out.println(fromServer);
-            }
-        } catch (IOException e){}
-*/
-
     }
 
-
+	/**
+	 * 
+	 * @return the uri of the request
+	 */
     public URI getURI() {
         return uri;
     }
+    /**
+     * Get the uri as a string
+     * @return uri as a string
+     */
     public String getURIStr(){
     	return uri.toString();
     }
-
+    /**
+     * Set the uri of the request to the given input.
+     * @param input
+     */
     public void setURI(URI input) {
         uri = input;
     }
-
+    /**
+     * Get the command of the request.
+     * @return
+     */
     public String getCommand() {
         return command;
     }
-
+    /**
+     * Set the command
+     * @param command
+     */
     public void setCommand(String command) {
         this.command = command;
     }
-
+    /**
+     * 
+     * @param host
+     */
     public void setHost(String host) {
         this.host = host;
     }
+    
+    /**
+     * 
+     * @param port
+     */
     public void setPort(int port){
         this.port = port;
     }
-
+    
+    /**
+     * 
+     * @return host
+     */
     public String getHost() {
         return host;
     }
+    /**
+     * 
+     * @return port number
+     */
     public int getPort(){
         return port;
     }
-
-    public static void receiveFile(Socket socket,int filesize,String filename) throws IOException
+    
+    /**
+     * 
+     * @param socket
+     * @param filesize
+     * @param filename
+     * @throws IOException
+     */
+ /*   public static void receiveFile(Socket socket,int filesize,String filename) throws IOException
     {
         //after receiving file send ack
         System.out.println("waiting ");
@@ -217,7 +266,7 @@ public class HTTPRequest {
         System.out.println(end-start);
         bos.close();
         System.out.println(" File received");
-    }
+    }*/
 
 }
 
