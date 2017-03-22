@@ -3,6 +3,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,7 +25,12 @@ public class HTTPRequestTest {
 	
 	@Test
     public void testHTTPRequestWrong() throws IllegalArgumentException, IOException, URISyntaxException {
-        HTTPRequest wrong = new HTTPRequest("HTTPCLIENT GET www.google.com 80");
+        //HTTPRequest wrong = new HTTPRequest("HTTPCLIENT GET www.google.com 80");
+		HTTPRequest wrong = new HTTPRequest("HTTPClient GET www.google.com 80");
+		System.out.println(wrong.getPath());
+        BufferedReader inFromUser = new BufferedReader( new InputStreamReader(System.in));
+
+		wrong.createRequest(inFromUser);
         
 	}
 	
@@ -40,8 +46,9 @@ public class HTTPRequestTest {
 		URI google= new URI("http://www.google.com/index.html");
 		System.out.println(google.getPath());
 		System.out.println(google.getPort());
+		System.out.println(google.getHost());
 		HTTPRequest goog = new HTTPRequest("HTTPClient GET tcpipguide.com 80");
-		
+		System.out.println(goog.getPath());
 		System.out.println(goog.getFilePath());
 		System.out.println(goog.getPath());
 

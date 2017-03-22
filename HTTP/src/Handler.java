@@ -101,7 +101,7 @@ public class Handler implements Runnable{
 	     	System.out.println("filepath "+filePath.toString());
 	     	sep = File.separatorChar;
 	     	File f = new File(domain + url);
-	     			
+	     	System.out.println("testtest "+url);
 	     	f.getParentFile().mkdirs();
 	     	//System.out.println(filePath2.toString());
 //	        File file = new File(System.getProperty("user.dir")+"/src/"+domain+url);
@@ -161,6 +161,7 @@ public class Handler implements Runnable{
 				}
 				else{
 					try {
+						System.out.println("space gif impossible");
 						statuscode(f, outToClient, 404);
 						break;
 					} catch (IOException e) {
@@ -317,6 +318,7 @@ public class Handler implements Runnable{
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			response404 += "Date: " + dateFormat.format(calendar.getTime()) + "\n";
 			out.writeBytes(response404);
+			System.out.println("written");
 			break;
 		case 500:
 			String response500 = version + "	500 Server Error \n";
