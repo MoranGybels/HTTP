@@ -43,6 +43,7 @@ public class Handler implements Runnable{
 	@Override
 	public void run(){
 		BufferedReader inFromClient;
+		System.out.println("PRINT IK NOG IETS?");
 		try {
 			inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
@@ -111,8 +112,8 @@ public class Handler implements Runnable{
 				if(f.exists()){
 					System.out.println("FILE EXIST");
 					if( clientHeaders.get("If-Modified-Since") == null){
-						System.out.println("IF-MODIFIED-SINCE IS NULL");
 						try {
+							System.out.println("KOMEN WE IN IMS IS NULL? ");
 							statuscode(f, outToClient, 200);
 
 							byte[] body = doGet(Paths.get(f.getPath()));
@@ -130,14 +131,18 @@ public class Handler implements Runnable{
 						//formatter = new SimpleDateFormat("hh:mm a"); //The "a" is the AM/PM marker
 						//String time = formatter.format(date);
 						
-						 DateTimeFormatter dtf  = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy:mm:ss z", Locale.ITALY);
-					     ZonedDateTime     zdt  = ZonedDateTime.parse(clientHeaders.get("If-Modified-Since"));        
-					     System.out.println(zdt.toInstant().toEpochMilli()); 
-					     long epoch = zdt.toInstant().toEpochMilli();
+						 SimpleDateFormat format  = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.UK);
+						 format.setTimeZone(TimeZone.getTimeZone("GMT"));
+						 //Date dateMod1 = DateUtil.parse(clientHeaders.get("If-Modified-Since"));
+						 Date dateMod2 = new Date(clientHeaders.get("If-Modified-Since"));
+					     //Date dateMod = format.parse(clientHeaders.get("If-Modified-Since"));   
+					     System.out.println(dateMod2.toInstant().toEpochMilli()); 
+					     long epoch = dateMod2.toInstant().toEpochMilli();
 					     System.out.println("EPOCH: " + epoch);
 					     System.out.println("LAST MODIFIED: " + f.lastModified());
-					     if(epoch<f.lastModified()){
+					     if(epoch>f.lastModified()){
 					    	 try {
+					    		 	System.out.println("KOMEN WE IN tijd is groter dan last modified ?");
 									statuscode(f, outToClient, 200);
 									byte[] body = doGet(Paths.get(f.getPath()));
 									outToClient.write(body);
@@ -148,6 +153,7 @@ public class Handler implements Runnable{
 								}
 					     } else{
 					    	 statuscode(f, outToClient, 304);
+					    	 break;
 					     }
 					
 					
@@ -165,6 +171,7 @@ public class Handler implements Runnable{
 				
 			case "HEAD":
 				if(f.exists()){
+					System.out.println("KOMEN WE IN HEAD? ");
 					statuscode(f, outToClient, 200);
 					break;
 				} else{
@@ -196,7 +203,7 @@ public class Handler implements Runnable{
 			}while(!lastRequest);
 		} catch (IOException e1) {
 			e1.printStackTrace();
-		}
+		} 
 		
 		
 		System.out.println("finished");
@@ -215,7 +222,7 @@ public class Handler implements Runnable{
 	
 	public String getHeader(File file) throws IOException{
 		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.GERMANY);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.UK);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		String response = "Date: " + dateFormat.format(calendar.getTime()) + "\n";
 		response += "Content-Type: " + Files.probeContentType(file.toPath()) + "\n";
