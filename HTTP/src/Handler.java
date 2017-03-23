@@ -35,15 +35,22 @@ public class Handler implements Runnable{
 	char sep;
 	String path = null; 
 
-	
+	/**
+	 * Constructor off the handler. It defines the socket to connect the server with the client.
+	 * @param socket
+	 */
 	public Handler(Socket socket){
 		this.clientSocket = socket; 
 	}
-
+	
+	/**
+	 * Analyses the input from the client and determines the given output from the server to the client. 
+	 */
 	@Override
 	public void run(){
+		
+		// Retrieving the input from the client.
 		BufferedReader inFromClient;
-		System.out.println("PRINT IK NOG IETS?");
 		try {
 			inFromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			DataOutputStream outToClient = new DataOutputStream(clientSocket.getOutputStream());
@@ -52,26 +59,19 @@ public class Handler implements Runnable{
 				do {
 					try {
 						clientSentence = inFromClient.readLine();
-						System.out.println("clientsentence "+clientSentence);
 					}
 					catch (SocketException e) {
-						System.out.println("WHOOPS: " + clientSentence);
 					}
 				} while (clientSentence != null && clientSentence.equals("\n"));
 
 				if (clientSentence == null) {
-					System.out.println("clientsentence null");
 					break;
 				}
 			
-				//System.out.println("Received: " + clientSentence);
+			// Analyse the clientsentence by splitting it in command, uri, version, headers and body. 
 	        analyse(clientSentence);
-	        
-	        System.out.println("GET HEADERS");
 			LinkedHashMap<String, String> clientHeaders = getHeaders(inFromClient);
-			System.out.println("GET BODY");
 			LinkedList<String> clientBody = getData(inFromClient);
-			System.out.println("BODY INCOMING");
 			for (String a: clientBody) {
 				System.out.println(a);
 			}
@@ -90,30 +90,25 @@ public class Handler implements Runnable{
 					}
 				}*/
 			
-			
+			// constructing absolute path of file.
 	        String url = uri;
 			url = uri.replaceAll("%20", " ");
 			if (url.startsWith("./")) {
 				url = url.substring(1);
 			}
-	     // Constructing local path and log
 	     	Path filePath = FileSystems.getDefault().getPath(domain, url);
 	     	System.out.println("filepath "+filePath.toString());
 	     	sep = File.separatorChar;
 	     	File f = new File(domain + url);
 	     	System.out.println("testtest "+url);
 	     	f.getParentFile().mkdirs();
-	     	//System.out.println(filePath2.toString());
-//	        File file = new File(System.getProperty("user.dir")+"/src/"+domain+url);
-//	        path = file.getAbsolutePath();
-//	        Files.createDirectories(filePath.getParent());
+
+	     	// Determine which command is given to determine the output. 
 			switch(command){
 			case "GET":
 				if(f.exists()){
-					System.out.println("FILE EXIST");
 					if( clientHeaders.get("If-Modified-Since") == null){
 						try {
-							System.out.println("KOMEN WE IN IMS IS NULL? ");
 							statuscode(f, outToClient, 200);
 
 							byte[] body = doGet(Paths.get(f.getPath()));
@@ -124,14 +119,7 @@ public class Handler implements Runnable{
 							e.printStackTrace();
 						}
 					} else{
-						
-						//Date date = new Date(clientHeaders.get("if-modified-since")); // 'epoch' in long
-						//SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.GERMANY);
-						//String dateString = formatter.format(date);
-						//formatter = new SimpleDateFormat("hh:mm a"); //The "a" is the AM/PM marker
-						//String time = formatter.format(date);
-						
-						 SimpleDateFormat format  = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.UK);
+						 SimpleDateFormat format  = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 						 format.setTimeZone(TimeZone.getTimeZone("GMT"));
 						 //Date dateMod1 = DateUtil.parse(clientHeaders.get("If-Modified-Since"));
 						 Date dateMod2 = new Date(clientHeaders.get("If-Modified-Since"));
@@ -142,7 +130,6 @@ public class Handler implements Runnable{
 					     System.out.println("LAST MODIFIED: " + f.lastModified());
 					     if(epoch>f.lastModified()){
 					    	 try {
-					    		 	System.out.println("KOMEN WE IN tijd is groter dan last modified ?");
 									statuscode(f, outToClient, 200);
 									byte[] body = doGet(Paths.get(f.getPath()));
 									outToClient.write(body);
@@ -161,7 +148,6 @@ public class Handler implements Runnable{
 				}
 				else{
 					try {
-						System.out.println("space gif impossible");
 						statuscode(f, outToClient, 404);
 						break;
 					} catch (IOException e) {
@@ -207,10 +193,12 @@ public class Handler implements Runnable{
 		} 
 		
 		
-		System.out.println("finished");
-		
 	}
 	
+	/**
+	 * Split the sentence in a command, uri and version.
+	 * @param sentence
+	 */
 	public void analyse(String sentence){
 		String[] input = sentence.split(" ");
 		command = input[0];
@@ -221,9 +209,15 @@ public class Handler implements Runnable{
 		System.out.println(version);
 	}
 	
+	/**
+	 * Determines extra file information and the date to return to the client after a request.
+	 * @param file
+	 * @return the header to return.
+	 * @throws IOException
+	 */
 	public String getHeader(File file) throws IOException{
 		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.UK);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		String response = "Date: " + dateFormat.format(calendar.getTime()) + "\n";
 		response += "Content-Type: " + Files.probeContentType(file.toPath()) + "\n";
@@ -232,10 +226,21 @@ public class Handler implements Runnable{
 		return response;
 	}
 	
+	/**
+	 * Returns the content of the file with the given path.
+	 * @param path
+	 * @return The content of the file with the given path.
+	 * @throws IOException
+	 */
 	public byte[] doGet(Path path) throws IOException{
 		return Files.readAllBytes(path);
 	}
 	
+	/**
+	 * Return true if and only if a new file is created with the given body, else return false.
+	 * @param f
+	 * @param body
+	 */
 	private boolean doPut(File f, LinkedList<String> body) {
 		if (f.exists()){
 			f.delete();
@@ -254,7 +259,12 @@ public class Handler implements Runnable{
 		return true;
 	}
 	
-	
+	/**
+	 * Return true if and only if the given data is written in the given file if one exists. Otherwise 
+	 * a new file is created.
+	 * @param f
+	 * @param data
+	 */
 	public boolean doPost(File f, LinkedList<String> data) {
 		try {
 			if (!f.exists()){
@@ -294,6 +304,13 @@ public class Handler implements Runnable{
 		return data;
 	}
 	
+	/**
+	 * Determines the status line and the headers the server should return to the client. 
+	 * @param file
+	 * @param out
+	 * @param i
+	 * @throws IOException
+	 */
 	public void statuscode(File file, DataOutputStream out, int i) throws IOException{
 		//System.out.println("FOut in statuscode functie? ");
 		switch(i){
@@ -314,7 +331,7 @@ public class Handler implements Runnable{
 		case 404:
 			String response404 = version + "	404 Not Found \n";
 			Calendar calendar = Calendar.getInstance();
-			SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z", Locale.US);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			response404 += "Date: " + dateFormat.format(calendar.getTime()) + "\n";
 			out.writeBytes(response404);
@@ -354,7 +371,7 @@ public class Handler implements Runnable{
 
 
 	/**
-	 * 
+	 * Returns the headers given by the client. 
 	 * @param inFromClient
 	 * 			The input reader from the client.
 	 * @return
