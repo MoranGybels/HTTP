@@ -1,3 +1,4 @@
+package tests;
 /**
  * Created by adminheremans on 13/03/17.
  */

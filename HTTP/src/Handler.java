@@ -103,7 +103,7 @@ public class Handler implements Runnable{
 			case "GET":
 				if(f.exists()&& !f.isDirectory()){
 					//If not modified since: simply get file, else: get file if modified since the date
-					if( clientHeaders.get("If-Modified-Since") == null){
+					if( clientHeaders.get("If-Modified-Since")  ==null && clientHeaders.get("IF-MODIFIED-SINCE")== null){
 						try {
 							statuscode(f, outToClient, 200);
 
@@ -119,12 +119,9 @@ public class Handler implements Runnable{
 						 //format.setTimeZone(TimeZone.getTimeZone("GMT"));
 						 //Date dateMod1 = DateUtil.parse(clientHeaders.get("If-Modified-Since"));
 						 Date dateMod2 = new Date(clientHeaders.get("If-Modified-Since"));
-						 System.out.println(dateMod2.getDate());
 					     //Date dateMod = format.parse(clientHeaders.get("If-Modified-Since"));   
 					     long epoch = dateMod2.toInstant().toEpochMilli();
-					     System.out.println(f.lastModified());
-					     System.out.println(epoch);
-					     if(epoch>f.lastModified()){
+					     if(epoch<f.lastModified()){
 					    	 try {
 									statuscode(f, outToClient, 200);
 									byte[] body = doGet(Paths.get(f.getPath()));
@@ -154,7 +151,6 @@ public class Handler implements Runnable{
 				
 			case "HEAD":
 				if(f.exists()){
-					System.out.println("KOMEN WE IN HEAD? ");
 					statuscode(f, outToClient, 200);
 					break;
 				} else{
