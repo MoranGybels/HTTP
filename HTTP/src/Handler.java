@@ -44,7 +44,7 @@ public class Handler implements Runnable{
 	}
 	
 	/**
-	 * Analyses the input from the client and determines the given output from the server to the client. 
+	 * Analyses the input from the client and determines the output from the server to the client. 
 	 */
 	@Override
 	public void run(){
@@ -72,9 +72,6 @@ public class Handler implements Runnable{
 	        analyse(clientSentence);
 			LinkedHashMap<String, String> clientHeaders = getHeaders(inFromClient);
 			LinkedList<String> clientBody = getData(inFromClient);
-			for (String a: clientBody) {
-				System.out.println(a);
-			}
 
 			String response = "";
 			String domain = "localhost";
@@ -97,16 +94,15 @@ public class Handler implements Runnable{
 				url = url.substring(1);
 			}
 	     	Path filePath = FileSystems.getDefault().getPath(domain, url);
-	     	System.out.println("filepath "+filePath.toString());
 	     	sep = File.separatorChar;
-	     	File f = new File(domain + url);
-	     	System.out.println("testtest "+url);
-	     	f.getParentFile().mkdirs();
+	     	File f = filePath.toFile();
+	     	//f.getParentFile().mkdirs();
 
 	     	// Determine which command is given to determine the output. 
 			switch(command){
 			case "GET":
-				if(f.exists()){
+				if(f.exists()&& !f.isDirectory()){
+					//If not modified since: simply get file, else: get file if modified since the date
 					if( clientHeaders.get("If-Modified-Since") == null){
 						try {
 							statuscode(f, outToClient, 200);
@@ -119,15 +115,15 @@ public class Handler implements Runnable{
 							e.printStackTrace();
 						}
 					} else{
-						 SimpleDateFormat format  = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-						 format.setTimeZone(TimeZone.getTimeZone("GMT"));
+						 //SimpleDateFormat format  = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+						 //format.setTimeZone(TimeZone.getTimeZone("GMT"));
 						 //Date dateMod1 = DateUtil.parse(clientHeaders.get("If-Modified-Since"));
 						 Date dateMod2 = new Date(clientHeaders.get("If-Modified-Since"));
+						 System.out.println(dateMod2.getDate());
 					     //Date dateMod = format.parse(clientHeaders.get("If-Modified-Since"));   
-					     System.out.println(dateMod2.toInstant().toEpochMilli()); 
 					     long epoch = dateMod2.toInstant().toEpochMilli();
-					     System.out.println("EPOCH: " + epoch);
-					     System.out.println("LAST MODIFIED: " + f.lastModified());
+					     System.out.println(f.lastModified());
+					     System.out.println(epoch);
 					     if(epoch>f.lastModified()){
 					    	 try {
 									statuscode(f, outToClient, 200);
@@ -206,7 +202,6 @@ public class Handler implements Runnable{
 		uri = input[1];
 		
 		version = input[2];
-		System.out.println(version);
 	}
 	
 	/**
@@ -315,35 +310,36 @@ public class Handler implements Runnable{
 		//System.out.println("FOut in statuscode functie? ");
 		switch(i){
 		case 200:
-			String response200 = version + "	200 OK \n";
+			String response200 = version + " 200 OK \n";
 			response200 += getHeader(file);
 			out.writeBytes(response200);
 			break;
 		case 400:
-			String response400 = version + "	400 Bad Request \n";
+			String response400 = version + " 400 Bad Request \n";
 			response400 += getHeader(file); 
 			response400 += "<html><body> \n"
 					+ "<h2>No Host: header received </h2> \n"
 					+ version + "requests must include the Host: header. \n"
 					+ "</body></html> \n";
 			out.writeBytes(response400);
+
 			break;
 		case 404:
-			String response404 = version + "	404 Not Found \n";
+			String response404 = version + " 404 Not Found \n";
 			Calendar calendar = Calendar.getInstance();
 			SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy:mm:ss z");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			response404 += "Date: " + dateFormat.format(calendar.getTime()) + "\n";
+			response404 += "Content-Length: 0\r\n\r\n";
 			out.writeBytes(response404);
-			System.out.println("written");
 			break;
 		case 500:
-			String response500 = version + "	500 Server Error \n";
+			String response500 = version + " 500 Server Error \n";
 			response500 += getHeader(file);
 			out.writeBytes(response500);
 			break;
 		case 304:
-			String response304 = version + "	304 Not Modified \n";
+			String response304 = version + " 304 Not Modified \n";
 			response304 += getHeader(file);
 			out.writeBytes(response304);
 			break;

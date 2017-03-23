@@ -1,8 +1,14 @@
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
-
 
 //Used for parsing
 import org.jsoup.Jsoup;
@@ -44,7 +50,6 @@ class HTTPClient{
 		
 		//create a request for the server
         HTTPRequest request = new HTTPRequest(sentence);
-        System.out.println(request.getHost());
         String req= request.createRequest(inFromUser);
         
         
@@ -55,7 +60,6 @@ class HTTPClient{
         InputStream inFromServer = clientSocket.getInputStream();
         
         //Write to the server
-        System.out.println("request :"+ req);
         outToServer.writeBytes(req);
 		outToServer.flush();
 		
@@ -96,7 +100,7 @@ class HTTPClient{
 				request.setFilePath(request.getFilePath()+sep + "index.html") ;
 			}
 		}
-		File file = new File("RequestedFiles" + sep + request.getHost() + sep + request.getFilePath());
+		File file = new File("localhost" + sep + request.getHost() + sep + request.getFilePath());
 		file.getParentFile().mkdirs();
 
 		//Create the file. If it existed, delete it.
@@ -121,7 +125,6 @@ class HTTPClient{
 			}
 		}
 		
-		System.out.println("File succesfully stored");
 		out.flush();
 		out.close();
 		
@@ -133,7 +136,6 @@ class HTTPClient{
 			Elements img = doc.getElementsByTag("img");
 			for (Element el : img) {
 				String src = el.attr("src");
-				System.out.println(src);
 				
 				//We try to avoid absolute URLs, because we weren't supposed to be able to process these
 				if(!src.startsWith("https:/")&&!src.startsWith("http:/") && !src.startsWith("www.")){
@@ -142,10 +144,8 @@ class HTTPClient{
 					}
 					src = src.replaceAll(" ", "%20");
 					images.add(src);
-					
 				}
 			}
-			System.out.println(images.size() + " IMAGES TO GET");
 			
 			//Now we get each image seperately
 			int i = 1;
@@ -161,7 +161,6 @@ class HTTPClient{
 					
 				}
 				
-				System.out.println("Responses for image fetching: ");
 				serverRes = rdLine(inFromServer,false);
 				
 				
@@ -194,7 +193,6 @@ class HTTPClient{
 				}
 				
 				else{
-					System.out.println("Image " + url + " could not be downloaded.\r\n");
 					System.out.println( serverRes);
 					//We should still read what the server has to say, go through the header and find content length
 					contentLength = -1;
@@ -302,7 +300,7 @@ class HTTPClient{
 	private static void imageDownload(InputStream in, String url, String host) throws IOException {
 		char sep = File.separatorChar;
 		url = url.replaceAll("%20", " ");
-		url = "RequestedFiles" + sep + host +  sep + url;
+		url = "localhost" + sep + host +  sep + url;
 		File f = new File(url);
 		//Create the parent path, if one exists
 		if(f.getParentFile() != null){

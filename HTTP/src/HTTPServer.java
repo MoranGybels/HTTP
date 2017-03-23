@@ -3,7 +3,7 @@ import java.net.*;
 
 class HTTPServer{
 	/**
-	 * Creates a new socket at a fixed portnumber and starts for each request a new handler and thread. 
+	 * Creates a new socket at a fixed portnumber 1567 and starts for each request a new handler and thread. 
 	 * @param argv
 	 * @throws Exception
 	 */
